@@ -1,6 +1,12 @@
 import express from 'express'
-import { addWidgets, getWidgets, updateWidget } from '../db/db.ts'
-import * as db from '../db/db.ts'
+import {
+  getWidgets,
+  addWidget,
+  getWidgetById,
+  updateWidget,
+  deleteWidget,
+} from '../db/db.ts'
+
 const router = express.Router()
 
 router.get('/', (req, res) => {
@@ -13,24 +19,33 @@ router.get('/', (req, res) => {
     })
 })
 
+router.get('/:id', (req, res) => {
+  const id = Number(req.params.id)
+  getWidgetById(id)
+    .then((widget) => {
+      res.json(widget)
+    })
+    .catch((err) => {
+      res.status(500).send(err.message)
+    })
+})
+
 router.post('/', async (req, res) => {
-  const newWidget = req.body
-  await addWidgets(newWidget)
-  res.json(newWidget)
+  const widget = req.body
+  const addedWidget = await addWidget(widget)
+  res.json(addedWidget)
+})
+
+router.patch('/', async (req, res) => {
+  const widget = req.body
+  const updatedWidget = await updateWidget(widget)
+  res.json(updatedWidget)
 })
 
 router.delete('/:id', async (req, res) => {
   const id = Number(req.params.id)
-  const result = await db.delWidget(id)
-  console.log(result)
-  res.json(result)
+  await deleteWidget(id)
+  res.sendStatus(200)
 })
 
-router.patch('/:id', async (req, res) => {
-  const id = Number(req.params.id)
-  const updatedWidget = req.body
-
-  const result = await updateWidget(id, updatedWidget)
-  res.json(result)
-})
 export default router

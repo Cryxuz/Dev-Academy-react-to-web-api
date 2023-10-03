@@ -1,15 +1,32 @@
-import { useState, FormEvent, ChangeEvent } from 'react'
-import { addWidget } from '../apiClient'
+import { useState, useEffect, FormEvent, ChangeEvent } from 'react'
+import { useParams } from 'react-router'
+
+import { getWidgetById, editWidget } from '../apiClient'
 
 const initialFormData = {
+  id: 0,
   name: '',
   price: 0,
   mfg: '',
   inStock: 0,
 }
 
-export default function AddWidget() {
+export default function EditWidget() {
   const [form, setForm] = useState(initialFormData)
+  const { id } = useParams()
+
+  useEffect(() => {
+    async function getWidget(): Promise<void> {
+      const widget = await getWidgetById(Number(id))
+      setForm(widget)
+    }
+
+    try {
+      getWidget()
+    } catch (err: any) {
+      console.error(err.message)
+    }
+  }, [id])
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target
@@ -19,13 +36,17 @@ export default function AddWidget() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    const addedWidget = await addWidget(form)
+    await editWidget(form)
     setForm(initialFormData)
   }
   return (
     <>
-      <h1>Add a new widget:</h1>
+      <h1>Edit a widget:</h1>
       <form onSubmit={handleSubmit}>
+        <p>
+          <label htmlFor="id">id: </label>
+          <input type="number" id="id" name="id" value={form.id} disabled />
+        </p>
         <p>
           <label htmlFor="name">name: </label>
           <input
@@ -70,7 +91,7 @@ export default function AddWidget() {
             required
           />
         </p>
-        <button>Add Widget</button>
+        <button>Save Widget</button>
       </form>
     </>
   )

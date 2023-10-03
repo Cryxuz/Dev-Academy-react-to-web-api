@@ -1,24 +1,30 @@
 import connection from './connection.ts'
 
 import { NewWidget, Widget } from '../../models/Widget.ts'
+
 const db = connection
 
-// setting the type for getWidgets function
 export function getWidgets(): Promise<Widget[]> {
   return db<Widget>('widgets').select()
 }
 
-// add
-export function addWidgets(newWidget: any) {
-  return db<NewWidget>('widgets').insert({ ...newWidget })
+export function getWidgetById(id: number): Promise<Widget> {
+  return db<Widget>('widgets').select().where('id', id).first()
 }
 
-//delete
-export function delWidget(id: number) {
-  return db<Widget>('widgets').where('id', id).delete()
+export function addWidget(widget: NewWidget): Promise<Widget[]> {
+  return db('widgets')
+    .insert({ ...widget })
+    .returning(['id', 'name', 'price', 'mfg', 'inStock'])
 }
 
-// edit
-export async function updateWidget(id: number, widgetPatch: object) {
-  return await db('widgets').where('id', id).update(widgetPatch).returning()
+export function updateWidget(widget: Widget): Promise<Widget[]> {
+  return db('widgets')
+    .returning(['id', 'name', 'price', 'mfg', 'inStock'])
+    .update({ ...widget })
+    .where('id', widget.id)
+}
+
+export function deleteWidget(id: number): Promise<void> {
+  return db('widgets').delete().where('id', id)
 }
